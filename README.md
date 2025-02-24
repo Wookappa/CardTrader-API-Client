@@ -18,7 +18,15 @@ This project is **not** affiliated with [cardtrader.com](https://www.cardtrader.
 
 To install the `CardTraderAPI` NuGet package, run the following command in your project:
 
-    dotnet add package CardTraderAPI.Client
+.NET CLI
+```bash
+dotnet add package CardTraderAPI.Client
+```
+
+Package Manager
+```powershell
+NuGet\Install-Package CardTraderAPI.Client
+```
 
 Alternatively, you can use the NuGet Package Manager in Visual Studio to search for `CardTraderAPI.Client` and install it.
 
