@@ -33,11 +33,16 @@ namespace CardTraderApi.Client.Apis
 				};
 			}
 
-			// Configura la Retry Policy con backoff esponenziale
 			_retryPolicy = Policy
 				.HandleResult<HttpResponseMessage>(r =>
-					r.StatusCode == HttpStatusCode.RequestTimeout || (int)r.StatusCode >= 500)
-				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+					r.StatusCode == HttpStatusCode.RequestTimeout ||
+					r.StatusCode == HttpStatusCode.TooManyRequests ||
+					(int)r.StatusCode >= 500)
+				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+					onRetry: (exception, timeSpan, context) =>
+					{
+						Console.WriteLine($"Retrying due to {exception.Result?.StatusCode}. Wait time: {timeSpan.TotalSeconds}s");
+					});
 		}
 
 		private async Task<T> HandleResponseAsync<T>(HttpResponseMessage response) where T : class
@@ -89,7 +94,6 @@ namespace CardTraderApi.Client.Apis
 				requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
 			}
 
-			// Applica la Retry Policy
 			var response = await _retryPolicy.ExecuteAsync(() => _httpClient.SendAsync(requestMessage));
 
 			if (response.StatusCode == HttpStatusCode.NotFound)
