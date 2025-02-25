@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace CardTraderApi.Client.Models.Marketplace
 {
-	public class CardItem
+	public class MarketProduct
 	{
 		[JsonPropertyName("id")]
 		public long Id { get; set; }

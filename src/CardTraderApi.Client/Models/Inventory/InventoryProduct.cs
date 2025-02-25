@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace CardTraderApi.Client.Models.Inventory
 {
-	public class Product : BaseProduct
+	public class InventoryProduct : BaseProduct
 	{
 		[JsonPropertyName("uploaded_images")]
 		public UploadedImage[] UploadedImages { get; set; }
