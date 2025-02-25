@@ -38,7 +38,7 @@ namespace CardTraderApi.Client.Apis
 					r.StatusCode == HttpStatusCode.RequestTimeout ||
 					r.StatusCode == HttpStatusCode.TooManyRequests ||
 					(int)r.StatusCode >= 500)
-				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+				.WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
 					onRetry: (exception, timeSpan, context) =>
 					{
 						Console.WriteLine($"Retrying due to {exception.Result?.StatusCode}. Wait time: {timeSpan.TotalSeconds}s");
@@ -86,15 +86,18 @@ namespace CardTraderApi.Client.Apis
 			if (useCache && _cache != null && _cache.TryGetValue(cacheKey, out T cached))
 				return cached;
 
-			var requestMessage = new HttpRequestMessage(method, requestUri);
-
-			if (data != null && method != HttpMethod.Get)
+			var response = await _retryPolicy.ExecuteAsync(async () =>
 			{
-				var json = JsonSerializer.Serialize(data);
-				requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
-			}
+				var requestMessage = new HttpRequestMessage(method, requestUri);
 
-			var response = await _retryPolicy.ExecuteAsync(() => _httpClient.SendAsync(requestMessage));
+				if (data != null && method != HttpMethod.Get)
+				{
+					var json = JsonSerializer.Serialize(data);
+					requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
+				}
+
+				return await _httpClient.SendAsync(requestMessage);
+			});
 
 			if (response.StatusCode == HttpStatusCode.NotFound)
 			{
