@@ -12,7 +12,7 @@ public interface IInventory
 	/// Get the user's products
 	/// </summary>
 	/// <returns></returns>
-	Task<IReadOnlyCollection<Product>> GetUserProducts();
+	Task<IReadOnlyCollection<InventoryProduct>> GetUserProducts();
 
 	/// <summary>
 	/// Get the user's expansions

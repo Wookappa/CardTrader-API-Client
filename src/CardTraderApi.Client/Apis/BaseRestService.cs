@@ -1,5 +1,7 @@
 ﻿using CardTraderApi.Client.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Polly;
+using Polly.Retry;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -13,6 +15,7 @@ namespace CardTraderApi.Client.Apis
 		private readonly CardTraderApiClientConfig _clientConfig;
 		private readonly IMemoryCache _cache;
 		private readonly MemoryCacheEntryOptions _cacheOptions;
+		private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
 		public BaseRestService(HttpClient httpClient, CardTraderApiClientConfig clientConfig, IMemoryCache cache)
 		{
@@ -29,6 +32,12 @@ namespace CardTraderApi.Client.Apis
 					SlidingExpiration = _clientConfig.UseSlidingCacheExpiration ? _clientConfig.CacheDuration : null,
 				};
 			}
+
+			// Configura la Retry Policy con backoff esponenziale
+			_retryPolicy = Policy
+				.HandleResult<HttpResponseMessage>(r =>
+					r.StatusCode == HttpStatusCode.RequestTimeout || (int)r.StatusCode >= 500)
+				.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 		}
 
 		private async Task<T> HandleResponseAsync<T>(HttpResponseMessage response) where T : class
@@ -80,7 +89,8 @@ namespace CardTraderApi.Client.Apis
 				requestMessage.Content = new StringContent(json, Encoding.UTF8, "application/json");
 			}
 
-			var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+			// Applica la Retry Policy
+			var response = await _retryPolicy.ExecuteAsync(() => _httpClient.SendAsync(requestMessage));
 
 			if (response.StatusCode == HttpStatusCode.NotFound)
 			{

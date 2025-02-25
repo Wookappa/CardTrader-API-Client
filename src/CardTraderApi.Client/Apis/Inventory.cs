@@ -24,7 +24,7 @@ public class Inventory : IInventory
 		_restService = restService;
 	}
 
-	public Task<IReadOnlyCollection<Product>> GetUserProducts() => _restService.SendGetRequestAsync<IReadOnlyCollection<Product>>(GetProductsPath, true);
+	public Task<IReadOnlyCollection<InventoryProduct>> GetUserProducts() => _restService.SendGetRequestAsync<IReadOnlyCollection<InventoryProduct>>(GetProductsPath, true);
 	public Task<IReadOnlyCollection<Expansion>> GetUserExpansions() => _restService.SendGetRequestAsync<IReadOnlyCollection<Expansion>>(GetExpansionsPath, true);
 	public Task<JobResult> GetJobStatus(string uuid) => _restService.SendGetRequestAsync<JobResult>(string.Format(GetJobStatusPath, uuid), true);
 
