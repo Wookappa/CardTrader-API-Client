@@ -38,7 +38,7 @@ namespace CardTraderApi.Client.Apis
 					r.StatusCode == HttpStatusCode.RequestTimeout ||
 					r.StatusCode == HttpStatusCode.TooManyRequests ||
 					(int)r.StatusCode >= 500)
-				.WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+				.WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
 					onRetry: (exception, timeSpan, context) =>
 					{
 						Console.WriteLine($"Retrying due to {exception.Result?.StatusCode}. Wait time: {timeSpan.TotalSeconds}s");
