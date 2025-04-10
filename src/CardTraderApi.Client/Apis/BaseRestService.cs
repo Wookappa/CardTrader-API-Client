@@ -17,6 +17,8 @@ namespace CardTraderApi.Client.Apis
 		private readonly MemoryCacheEntryOptions _cacheOptions;
 		private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
+		private const int MaxRetryAttempt = 5;
+
 		public BaseRestService(HttpClient httpClient, CardTraderApiClientConfig clientConfig, IMemoryCache cache)
 		{
 			_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -38,7 +40,7 @@ namespace CardTraderApi.Client.Apis
 					r.StatusCode == HttpStatusCode.RequestTimeout ||
 					r.StatusCode == HttpStatusCode.TooManyRequests ||
 					(int)r.StatusCode >= 500)
-				.WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+				.WaitAndRetryAsync(MaxRetryAttempt, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
 					onRetry: (exception, timeSpan, context) =>
 					{
 						Console.WriteLine($"Retrying due to {exception.Result?.StatusCode}. Wait time: {timeSpan.TotalSeconds}s");
