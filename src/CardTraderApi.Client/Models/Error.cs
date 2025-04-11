@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-
 namespace CardTraderApi.Client.Models;
 
 public class Error : BaseItem
