@@ -19,16 +19,22 @@ public static class DependencyInjection
 	{
 		services.AddScoped(_ => clientConfig.Clone());
 
+		services.AddSingleton<ITokenProvider, TokenProvider>(_ =>
+		{
+			var provider = new TokenProvider();
+			if (!string.IsNullOrWhiteSpace(jwtToken))
+			{
+				provider.SetToken(jwtToken);
+			}
+
+			return provider;
+		});
+
 		var clientBuilder = services.AddHttpClient<CardTraderApiClient>(client =>
 		{
 			client.BaseAddress = clientConfig.CardTraderApiBaseAddress;
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			client.DefaultRequestHeaders.Add("User-Agent", "CardPriceApiClient/1.0.0");
-
-			if (!string.IsNullOrWhiteSpace(jwtToken))
-			{
-				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-			}
 		});
 
 		return clientBuilder;
