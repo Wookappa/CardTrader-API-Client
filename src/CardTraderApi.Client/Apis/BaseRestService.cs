@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Polly;
 using Polly.Retry;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Web;
@@ -12,26 +13,26 @@ namespace CardTraderApi.Client.Apis
 	internal sealed class BaseRestService
 	{
 		private readonly HttpClient _httpClient;
-		private readonly CardTraderApiClientConfig _clientConfig;
+		private readonly ITokenProvider _tokenProvider;
 		private readonly IMemoryCache _cache;
 		private readonly MemoryCacheEntryOptions _cacheOptions;
 		private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
 		private const int MaxRetryAttempt = 5;
 
-		public BaseRestService(HttpClient httpClient, CardTraderApiClientConfig clientConfig, IMemoryCache cache)
+		public BaseRestService(HttpClient httpClient, CardTraderApiClientConfig clientConfig, IMemoryCache cache, ITokenProvider tokenProvider)
 		{
 			_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+			_tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
 			_httpClient.BaseAddress ??= clientConfig.CardTraderApiBaseAddress;
-			_clientConfig = clientConfig;
 			_cache = cache;
 
 			if (clientConfig.EnableCaching)
 			{
 				_cacheOptions = new MemoryCacheEntryOptions
 				{
-					AbsoluteExpirationRelativeToNow = _clientConfig.UseSlidingCacheExpiration ? null : _clientConfig.CacheDuration,
-					SlidingExpiration = _clientConfig.UseSlidingCacheExpiration ? _clientConfig.CacheDuration : null,
+					AbsoluteExpirationRelativeToNow = clientConfig.UseSlidingCacheExpiration ? null : clientConfig.CacheDuration,
+					SlidingExpiration = clientConfig.UseSlidingCacheExpiration ? clientConfig.CacheDuration : null,
 				};
 			}
 
@@ -41,7 +42,7 @@ namespace CardTraderApi.Client.Apis
 					r.StatusCode == HttpStatusCode.TooManyRequests ||
 					(int)r.StatusCode >= 500)
 				.WaitAndRetryAsync(MaxRetryAttempt, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-					onRetry: (exception, timeSpan, context) =>
+					onRetry: (exception, timeSpan, _) =>
 					{
 						Console.WriteLine($"Retrying due to {exception.Result?.StatusCode}. Wait time: {timeSpan.TotalSeconds}s");
 					});
@@ -83,7 +84,7 @@ namespace CardTraderApi.Client.Apis
 				requestUri += queryString;
 			}
 
-			var cacheKey = _httpClient.BaseAddress.AbsoluteUri + requestUri;
+			var cacheKey = _httpClient.BaseAddress?.AbsoluteUri + requestUri;
 
 			if (useCache && _cache != null && _cache.TryGetValue(cacheKey, out T cached))
 				return cached;
@@ -91,6 +92,13 @@ namespace CardTraderApi.Client.Apis
 			var response = await _retryPolicy.ExecuteAsync(async () =>
 			{
 				var requestMessage = new HttpRequestMessage(method, requestUri);
+
+				var token = _tokenProvider.JwtToken;
+
+				if (!string.IsNullOrWhiteSpace(token))
+				{
+					requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+				}
 
 				if (data != null && method != HttpMethod.Get)
 				{
@@ -106,8 +114,8 @@ namespace CardTraderApi.Client.Apis
 				throw new CardTraderApiException("Resource not found")
 				{
 					ResponseStatusCode = response.StatusCode,
-					RequestUri = response.RequestMessage.RequestUri,
-					RequestMethod = response.RequestMessage.Method
+					RequestUri = response.RequestMessage?.RequestUri,
+					RequestMethod = response.RequestMessage?.Method
 				};
 			}
 
@@ -117,8 +125,8 @@ namespace CardTraderApi.Client.Apis
 				throw new CardTraderApiException(error.Extra.Content)
 				{
 					ResponseStatusCode = response.StatusCode,
-					RequestUri = response.RequestMessage.RequestUri,
-					RequestMethod = response.RequestMessage.Method
+					RequestUri = response.RequestMessage?.RequestUri,
+					RequestMethod = response.RequestMessage?.Method
 				};
 			}
 
