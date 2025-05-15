@@ -50,10 +50,23 @@ namespace CardTraderApi.Client.Apis
 
 		private async Task<T> HandleResponseAsync<T>(HttpResponseMessage response) where T : class
 		{
-			var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+			if (content.StartsWith("<!DOCTYPE html>", StringComparison.OrdinalIgnoreCase))
+			{
+				var cardTraderMessage = ExtractCardTraderMessage(content);
+
+				throw new CardTraderApiException($"CardTrader Api Error: {cardTraderMessage}")
+				{
+					ResponseStatusCode = response.StatusCode,
+					RequestUri = response.RequestMessage?.RequestUri,
+					RequestMethod = response.RequestMessage?.Method
+				};
+			}
+
+			var jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 			var obj = await JsonSerializer.DeserializeAsync<T>(jsonStream);
 
-			// Handle error response
 			if (obj is Error)
 			{
 				jsonStream.Position = 0;
@@ -69,6 +82,30 @@ namespace CardTraderApi.Client.Apis
 			}
 
 			return obj;
+		}
+
+		private string ExtractCardTraderMessage(string htmlContent)
+		{
+			try
+			{
+				const string startTag = "<p>";
+				const string endTag = "</p>";
+
+				var startIndex = htmlContent.IndexOf(startTag, StringComparison.OrdinalIgnoreCase);
+				var endIndex = htmlContent.IndexOf(endTag, startIndex, StringComparison.OrdinalIgnoreCase);
+
+				if (startIndex != -1 && endIndex != -1)
+				{
+					startIndex += startTag.Length;
+					return htmlContent.Substring(startIndex, endIndex - startIndex).Trim();
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error extracting error message: {ex.Message}");
+			}
+
+			return "Unknown error message.";
 		}
 
 		private async Task<T> SendRequestAsync<T>(string resourceUrl, HttpMethod method, object data = null, bool useCache = true) where T : class
