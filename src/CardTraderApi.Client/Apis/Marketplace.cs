@@ -12,6 +12,8 @@ public class Marketplace : IMarketplace
 	private const string GetCartPath = "api/v2/cart";
 	private const string AddProductPath = "api/v2/cart/add";
 	private const string RemoveProductPath = "api/v2/cart/remove";
+	private const string GetExpansionsPath = "api/v2/expansions";
+	private const string GetGamesPath = "api/v2/games";
 
 	internal Marketplace(BaseRestService restService)
 	{
@@ -52,5 +54,15 @@ public class Marketplace : IMarketplace
 		};
 
 		return await _restService.SendPostRequestAsync<Cart>(RemoveProductPath, product);
+	}
+
+	public async Task<List<Expansion>> GetListOfExpansions()
+	{
+		return await _restService.SendGetRequestAsync<List<Expansion>>(GetExpansionsPath, true);
+	}
+
+	public async Task<GameListResponse> GetListOfGames()
+	{
+		return await _restService.SendGetRequestAsync<GameListResponse>(GetGamesPath, true);
 	}
 }
