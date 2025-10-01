@@ -1,4 +1,5 @@
 ﻿using CardTraderApi.Client.Models.Marketplace;
+using System.Collections.Generic;
 
 namespace CardTraderApi.Client.Apis.Interfaces;
 
@@ -51,4 +52,16 @@ public interface IMarketplace
 	/// <param name="quantity"></param>
 	/// <returns></returns>
 	Task<Cart> RemoveProduct(int productId, int quantity = 1);
+
+	/// <summary>
+	/// Get list of expansions
+	/// </summary>
+	/// <returns></returns>
+	Task<List<Expansion>> GetListOfExpansions();
+
+	/// <summary>
+	/// Get list of games
+	/// </summary>
+	/// <returns></returns>
+	Task<GameListResponse> GetListOfGames();
 }
