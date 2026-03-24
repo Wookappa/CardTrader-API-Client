@@ -30,11 +30,13 @@ public static class DependencyInjection
 			return provider;
 		});
 
+		services.AddScoped<ICardTraderApiClient>(sp => sp.GetRequiredService<CardTraderApiClient>());
+
 		var clientBuilder = services.AddHttpClient<CardTraderApiClient>(client =>
 		{
 			client.BaseAddress = clientConfig.CardTraderApiBaseAddress;
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			client.DefaultRequestHeaders.Add("User-Agent", "CardPriceApiClient/1.0.0");
+			client.DefaultRequestHeaders.Add("User-Agent", "CardTraderApiClient/1.2.0");
 		});
 
 		return clientBuilder;

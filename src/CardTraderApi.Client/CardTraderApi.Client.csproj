@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>true</ImplicitUsings>
 		<PackageId>CardTraderAPI.Client</PackageId>
 		<Version>1.2.0</Version>
@@ -40,11 +40,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-		<PackageReference Include="Polly" Version="8.5.2" />
-		<PackageReference Include="System.Text.Json" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.201" PrivateAssets="All" />
+		<PackageReference Include="Polly" Version="8.6.6" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
 	</ItemGroup>
 
 </Project>

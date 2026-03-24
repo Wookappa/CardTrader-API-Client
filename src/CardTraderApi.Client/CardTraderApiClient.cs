@@ -48,7 +48,7 @@ public class CardTraderApiClient : ICardTraderApiClient
 	/// ensuring that all subsequent HTTP requests use the updated token for authorization.
 	/// </summary>
 	/// <param name="newJwtToken">The new JWT token to be used for authentication.</param>
-	public void UpdateJtwToken(string newJwtToken)
+	public void UpdateJwtToken(string newJwtToken)
 	{
 		if (string.IsNullOrWhiteSpace(newJwtToken))
 			throw new ArgumentNullException(nameof(newJwtToken));

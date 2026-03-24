@@ -8,44 +8,39 @@ namespace CardTraderApi.Client.Apis;
 public class Marketplace : IMarketplace
 {
 	private readonly BaseRestService _restService;
-	private const string GetProductsPath = "api/v2/marketplace/products";
-	private const string GetCartPath = "api/v2/cart";
-	private const string AddProductPath = "api/v2/cart/add";
-	private const string RemoveProductPath = "api/v2/cart/remove";
-	private const string GetExpansionsPath = "api/v2/expansions";
-	private const string GetGamesPath = "api/v2/games";
 
 	internal Marketplace(BaseRestService restService)
 	{
 		_restService = restService;
 	}
 
-	public async Task<MarketplaceProductsResponse> GetMarketPlaceProductByBlueprintId(int blueprintId)
+	public async Task<MarketplaceProductsResponse> GetMarketPlaceProductByBlueprintId(int blueprintId, CancellationToken ct = default)
 	{
 		var request = MarketplaceRequestFactory.GetProductsByBlueprintId(blueprintId);
-		return await _restService.SendGetRequestWithQueryAsync<MarketplaceProductsResponse>(GetProductsPath, request);
+		return await _restService.SendGetRequestWithQueryAsync<MarketplaceProductsResponse>(Routes.MarketplaceProducts, request, ct: ct).ConfigureAwait(false);
 	}
 
-	public async Task<MarketplaceProductsResponse> GetMarketPlaceProductByExpansionId(int expansionId)
+	public async Task<MarketplaceProductsResponse> GetMarketPlaceProductByExpansionId(int expansionId, CancellationToken ct = default)
 	{
 		var request = MarketplaceRequestFactory.GetProductsByExpansionId(expansionId);
-		return await _restService.SendGetRequestWithQueryAsync<MarketplaceProductsResponse>(GetProductsPath, request);
+		return await _restService.SendGetRequestWithQueryAsync<MarketplaceProductsResponse>(Routes.MarketplaceProducts, request, ct: ct).ConfigureAwait(false);
 	}
 
-	public Task<Cart> GetUserCart() => _restService.SendGetRequestAsync<Cart>(GetCartPath, true);
+	public Task<Cart> GetUserCart(CancellationToken ct = default)
+		=> _restService.SendGetRequestAsync<Cart>(Routes.Cart, true, ct);
 
-	public async Task<Cart> AddProduct(AddToCartRequest product)
+	public async Task<Cart> AddProduct(AddToCartRequest product, CancellationToken ct = default)
 	{
-		return await _restService.SendPostRequestAsync<Cart>(AddProductPath, product);
+		return await _restService.SendPostRequestAsync<Cart>(Routes.CartAdd, product, ct).ConfigureAwait(false);
 	}
 
-	public async Task<Cart> AddProduct(int productId, int quantity = 1, bool viaCardTraderZero = false)
+	public async Task<Cart> AddProduct(int productId, int quantity = 1, bool viaCardTraderZero = false, CancellationToken ct = default)
 	{
 		var request = MarketplaceRequestFactory.AddProduct(productId, quantity, viaCardTraderZero);
-		return await AddProduct(request);
+		return await AddProduct(request, ct).ConfigureAwait(false);
 	}
 
-	public async Task<Cart> RemoveProduct(int productId, int quantity = 1)
+	public async Task<Cart> RemoveProduct(int productId, int quantity = 1, CancellationToken ct = default)
 	{
 		var product = new AddToCartRequest
 		{
@@ -53,16 +48,16 @@ public class Marketplace : IMarketplace
 			Quantity = quantity
 		};
 
-		return await _restService.SendPostRequestAsync<Cart>(RemoveProductPath, product);
+		return await _restService.SendPostRequestAsync<Cart>(Routes.CartRemove, product, ct).ConfigureAwait(false);
 	}
 
-	public async Task<List<Expansion>> GetListOfExpansions()
+	public async Task<List<Expansion>> GetListOfExpansions(CancellationToken ct = default)
 	{
-		return await _restService.SendGetRequestAsync<List<Expansion>>(GetExpansionsPath, true);
+		return await _restService.SendGetRequestAsync<List<Expansion>>(Routes.Expansions, true, ct).ConfigureAwait(false);
 	}
 
-	public async Task<GameListResponse> GetListOfGames()
+	public async Task<GameListResponse> GetListOfGames(CancellationToken ct = default)
 	{
-		return await _restService.SendGetRequestAsync<GameListResponse>(GetGamesPath, true);
+		return await _restService.SendGetRequestAsync<GameListResponse>(Routes.Games, true, ct).ConfigureAwait(false);
 	}
 }
