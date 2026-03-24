@@ -111,4 +111,52 @@ public interface IInventory
 	/// <param name="ct"></param>
 	/// <returns></returns>
 	Task<JobResult> GetJobStatus(string uuid, CancellationToken ct = default);
+
+	/// <summary>
+	/// Upload an image for a product from a remote URL
+	/// </summary>
+	/// <param name="productId">The product ID</param>
+	/// <param name="remoteImageUrl">The remote image URL</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<ImageUploadResponse> AddImage(int productId, string remoteImageUrl, CancellationToken ct = default);
+
+	/// <summary>
+	/// Upload an image for a product from a file stream
+	/// </summary>
+	/// <param name="productId">The product ID</param>
+	/// <param name="imageStream">The image file stream</param>
+	/// <param name="fileName">The image file name</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<ImageUploadResponse> AddImage(int productId, Stream imageStream, string fileName, CancellationToken ct = default);
+
+	/// <summary>
+	/// Remove the image associated with a product
+	/// </summary>
+	/// <param name="productId">The product ID</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task RemoveImage(int productId, CancellationToken ct = default);
+
+	/// <summary>
+	/// Upload a CSV file to import products
+	/// </summary>
+	/// <param name="gameId">The game ID</param>
+	/// <param name="replaceStockOrAddToStock">"replace_stock" or "add_to_stock"</param>
+	/// <param name="columnNames">Pipe-separated column names (e.g. "name|quantity|price_cents")</param>
+	/// <param name="csvStream">The CSV file stream</param>
+	/// <param name="csvFileName">The CSV file name</param>
+	/// <param name="errorMode">Optional error mode ("strict" or null)</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<CsvImportResponse> UploadCsv(int gameId, string replaceStockOrAddToStock, string columnNames, Stream csvStream, string csvFileName, string errorMode = null, CancellationToken ct = default);
+
+	/// <summary>
+	/// Get the status of a CSV import
+	/// </summary>
+	/// <param name="id">The import ID</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<CsvImportStatusResponse> GetCsvImportStatus(int id, CancellationToken ct = default);
 }

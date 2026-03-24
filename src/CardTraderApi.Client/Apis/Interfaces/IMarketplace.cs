@@ -59,6 +59,21 @@ public interface IMarketplace
 	Task<Cart> RemoveProduct(int productId, int quantity = 1, CancellationToken ct = default);
 
 	/// <summary>
+	/// Finalize and purchase the cart
+	/// </summary>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<Cart> Purchase(CancellationToken ct = default);
+
+	/// <summary>
+	/// Get shipping methods for a specific seller
+	/// </summary>
+	/// <param name="username">The seller's username</param>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	Task<List<ShippingMethod>> GetShippingMethods(string username, CancellationToken ct = default);
+
+	/// <summary>
 	/// Get list of expansions
 	/// </summary>
 	/// <param name="ct"></param>

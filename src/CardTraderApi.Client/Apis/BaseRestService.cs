@@ -156,6 +156,101 @@ internal sealed class BaseRestService
 	public Task<T> SendDeleteRequestAsync<T>(string resourceUrl, CancellationToken ct = default) where T : class
 		=> SendRequestAsync<T>(resourceUrl, HttpMethod.Delete, null, false, ct);
 
+	public async Task SendDeleteRequestAsync(string resourceUrl, CancellationToken ct = default)
+	{
+		if (string.IsNullOrWhiteSpace(resourceUrl))
+			throw new ArgumentNullException(nameof(resourceUrl));
+
+		var response = await _retryPipeline.ExecuteAsync(async token =>
+		{
+			var requestMessage = new HttpRequestMessage(HttpMethod.Delete, resourceUrl);
+
+			var jwtToken = _tokenProvider.JwtToken;
+			if (!string.IsNullOrWhiteSpace(jwtToken))
+				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+			return await _httpClient.SendAsync(requestMessage, token).ConfigureAwait(false);
+		}, ct).ConfigureAwait(false);
+
+		if (response.StatusCode == HttpStatusCode.NotFound)
+		{
+			throw new CardTraderApiException("Resource not found")
+			{
+				ResponseStatusCode = response.StatusCode,
+				RequestUri = response.RequestMessage?.RequestUri,
+				RequestMethod = response.RequestMessage?.Method
+			};
+		}
+
+		if (response.StatusCode is not HttpStatusCode.OK and not HttpStatusCode.Accepted and not HttpStatusCode.NoContent)
+		{
+			Error error = null;
+			try
+			{
+				error = await DeserializeResponseAsync<Error>(response, ct).ConfigureAwait(false);
+			}
+			catch (CardTraderApiException) { throw; }
+			catch { }
+
+			throw new CardTraderApiException(error?.Extra?.Content ?? $"Request failed with status {(int)response.StatusCode}")
+			{
+				ResponseStatusCode = response.StatusCode,
+				RequestUri = response.RequestMessage?.RequestUri,
+				RequestMethod = response.RequestMessage?.Method,
+				CardTraderError = error
+			};
+		}
+	}
+
+	public async Task<T> SendMultipartPostRequestAsync<T>(string resourceUrl, MultipartFormDataContent content, CancellationToken ct = default) where T : class
+	{
+		if (string.IsNullOrWhiteSpace(resourceUrl))
+			throw new ArgumentNullException(nameof(resourceUrl));
+
+		var response = await _retryPipeline.ExecuteAsync(async token =>
+		{
+			var requestMessage = new HttpRequestMessage(HttpMethod.Post, resourceUrl);
+
+			var jwtToken = _tokenProvider.JwtToken;
+			if (!string.IsNullOrWhiteSpace(jwtToken))
+				requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+			requestMessage.Content = content;
+			return await _httpClient.SendAsync(requestMessage, token).ConfigureAwait(false);
+		}, ct).ConfigureAwait(false);
+
+		if (response.StatusCode == HttpStatusCode.NotFound)
+		{
+			throw new CardTraderApiException("Resource not found")
+			{
+				ResponseStatusCode = response.StatusCode,
+				RequestUri = response.RequestMessage?.RequestUri,
+				RequestMethod = response.RequestMessage?.Method
+			};
+		}
+
+		if (response.StatusCode is not HttpStatusCode.OK and not HttpStatusCode.Accepted)
+		{
+			Error error = null;
+			try
+			{
+				error = await DeserializeResponseAsync<Error>(response, ct).ConfigureAwait(false);
+			}
+			catch (CardTraderApiException) { throw; }
+			catch { }
+
+			throw new CardTraderApiException(error?.Extra?.Content ?? $"Request failed with status {(int)response.StatusCode}")
+			{
+				ResponseStatusCode = response.StatusCode,
+				RequestUri = response.RequestMessage?.RequestUri,
+				RequestMethod = response.RequestMessage?.Method,
+				CardTraderError = error
+			};
+		}
+
+		return await DeserializeResponseAsync<T>(response, ct).ConfigureAwait(false);
+	}
+
 	public Task<T> SendGetRequestWithQueryAsync<T>(string resourceUrl, object queryParams, bool useCache = true, CancellationToken ct = default) where T : class
 	{
 		if (string.IsNullOrWhiteSpace(resourceUrl))

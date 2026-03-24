@@ -13,4 +13,10 @@ public interface ICardTraderApiClient
 
 	///<inheritdoc cref="IMarketplace"/>
 	IMarketplace Marketplace { get; }
+
+	///<inheritdoc cref="IWishlists"/>
+	IWishlists Wishlists { get; }
+
+	///<inheritdoc cref="IOrders"/>
+	IOrders Orders { get; }
 }

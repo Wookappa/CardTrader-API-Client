@@ -139,13 +139,14 @@ Below is an overview of existing features (marked with `[x]`) and planned featur
 - [x] Cart Status  
 - [x] Add Product to Cart  
 - [x] Remove Product from Cart  
-- [ ] Purchase  
-- [ ] Shipping Methods  
+- [x] Purchase  
+- [x] Shipping Methods  
 
 **Wishlists**  
-- [ ] Show  
-- [ ] Create  
-- [ ] Delete  
+- [x] List  
+- [x] Show  
+- [x] Create  
+- [x] Delete  
 
 **Inventory Management**  
 - [x] List your Expansions  
@@ -156,6 +157,8 @@ Below is an overview of existing features (marked with `[x]`) and planned featur
 - [x] Update  
 - [x] Delete  
 - [x] Increment or Decrement  
+- [x] Add Image  
+- [x] Remove Image  
 
 **Batch Product Operations**  
 - [x] Create  
@@ -164,27 +167,26 @@ Below is an overview of existing features (marked with `[x]`) and planned featur
 - [x] Job  
 
 **CSV Product Operations**  
-- [ ] Upload  
-- [ ] Status  
+- [x] Upload  
+- [x] Status  
 
 **Order Management**  
-- [ ] List your Orders  
-- [ ] Order Details  
-- [ ] Update  
-- [ ] Set Tracking Code  
-- [ ] Ship  
-- [ ] Request Cancellation  
-- [ ] Confirm Cancellation  
+- [x] List your Orders  
+- [x] Order Details  
+- [x] Set Tracking Code  
+- [x] Ship  
+- [x] Request Cancellation  
+- [x] Confirm Cancellation  
 
 **CT0 Box Items**  
-- [ ] List your CT0 Box Items  
-- [ ] CT0 Box Item Details  
+- [x] List your CT0 Box Items  
+- [x] CT0 Box Item Details  
 
 **Errors**  
 - [x] Exceptions handled via `CardTraderApiException`  
 
 **Webhooks**  
-- [ ] Webhook integration  
+- [x] Webhook signature verification via `WebhookValidator`  
 
 ## Contributing
 

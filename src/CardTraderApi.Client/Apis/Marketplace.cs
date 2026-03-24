@@ -51,6 +51,17 @@ public class Marketplace : IMarketplace
 		return await _restService.SendPostRequestAsync<Cart>(Routes.CartRemove, product, ct).ConfigureAwait(false);
 	}
 
+	public async Task<Cart> Purchase(CancellationToken ct = default)
+	{
+		return await _restService.SendPostRequestAsync<Cart>(Routes.CartPurchase, null, ct).ConfigureAwait(false);
+	}
+
+	public async Task<List<ShippingMethod>> GetShippingMethods(string username, CancellationToken ct = default)
+	{
+		var request = new ShippingMethodsRequest { Username = username };
+		return await _restService.SendGetRequestWithQueryAsync<List<ShippingMethod>>(Routes.ShippingMethods, request, ct: ct).ConfigureAwait(false);
+	}
+
 	public async Task<List<Expansion>> GetListOfExpansions(CancellationToken ct = default)
 	{
 		return await _restService.SendGetRequestAsync<List<Expansion>>(Routes.Expansions, true, ct).ConfigureAwait(false);

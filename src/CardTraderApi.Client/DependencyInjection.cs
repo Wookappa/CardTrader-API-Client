@@ -36,7 +36,7 @@ public static class DependencyInjection
 		{
 			client.BaseAddress = clientConfig.CardTraderApiBaseAddress;
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			client.DefaultRequestHeaders.Add("User-Agent", "CardTraderApiClient/1.2.0");
+			client.DefaultRequestHeaders.Add("User-Agent", "CardTraderApiClient/1.3.0");
 		});
 
 		return clientBuilder;

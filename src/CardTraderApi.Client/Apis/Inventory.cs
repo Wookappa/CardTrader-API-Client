@@ -76,4 +76,47 @@ public class Inventory : IInventory
 		var request = InventoryRequestFactory.IncrementOrDecrement(id, deltaQuantity);
 		return await _restService.SendPostRequestAsync<ProductResponse>(Routes.ForProductIncrement(id), request, ct).ConfigureAwait(false);
 	}
+
+	public async Task<ImageUploadResponse> AddImage(int productId, string remoteImageUrl, CancellationToken ct = default)
+	{
+		var content = new MultipartFormDataContent
+		{
+			{ new StringContent(remoteImageUrl), "uploaded_image[remote_image_url]" }
+		};
+
+		return await _restService.SendMultipartPostRequestAsync<ImageUploadResponse>(Routes.ForProductUploadImage(productId), content, ct).ConfigureAwait(false);
+	}
+
+	public async Task<ImageUploadResponse> AddImage(int productId, Stream imageStream, string fileName, CancellationToken ct = default)
+	{
+		var content = new MultipartFormDataContent();
+		var streamContent = new StreamContent(imageStream);
+		content.Add(streamContent, "uploaded_image[image]", fileName);
+
+		return await _restService.SendMultipartPostRequestAsync<ImageUploadResponse>(Routes.ForProductUploadImage(productId), content, ct).ConfigureAwait(false);
+	}
+
+	public async Task RemoveImage(int productId, CancellationToken ct = default)
+	{
+		await _restService.SendDeleteRequestAsync(Routes.ForProductUploadImage(productId), ct).ConfigureAwait(false);
+	}
+
+	public async Task<CsvImportResponse> UploadCsv(int gameId, string replaceStockOrAddToStock, string columnNames, Stream csvStream, string csvFileName, string errorMode = null, CancellationToken ct = default)
+	{
+		var content = new MultipartFormDataContent
+		{
+			{ new StreamContent(csvStream), "csv", csvFileName },
+			{ new StringContent(gameId.ToString()), "game_id" },
+			{ new StringContent(replaceStockOrAddToStock), "replace_stock_or_add_to_stock" },
+			{ new StringContent(columnNames), "column_names" }
+		};
+
+		if (!string.IsNullOrEmpty(errorMode))
+			content.Add(new StringContent(errorMode), "error_mode");
+
+		return await _restService.SendMultipartPostRequestAsync<CsvImportResponse>(Routes.ProductImports, content, ct).ConfigureAwait(false);
+	}
+
+	public Task<CsvImportStatusResponse> GetCsvImportStatus(int id, CancellationToken ct = default)
+		=> _restService.SendGetRequestAsync<CsvImportStatusResponse>(Routes.ForProductImport(id), true, ct);
 }

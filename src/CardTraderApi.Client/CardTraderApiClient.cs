@@ -9,6 +9,8 @@ public class CardTraderApiClient : ICardTraderApiClient
 {
 	private readonly Lazy<IInventory> _products;
 	private readonly Lazy<IMarketplace> _marketProducts;
+	private readonly Lazy<IWishlists> _wishlists;
+	private readonly Lazy<IOrders> _orders;
 	private readonly ITokenProvider _tokenProvider;
 
 	///<inheritdoc cref="IInventory"/>
@@ -16,6 +18,12 @@ public class CardTraderApiClient : ICardTraderApiClient
 
 	///<inheritdoc cref="IMarketplace"/>
 	public IMarketplace Marketplace => _marketProducts.Value;
+
+	///<inheritdoc cref="IWishlists"/>
+	public IWishlists Wishlists => _wishlists.Value;
+
+	///<inheritdoc cref="IOrders"/>
+	public IOrders Orders => _orders.Value;
 
 	/// <summary>
 	/// Instantiate a new CardTrader API client.
@@ -40,6 +48,8 @@ public class CardTraderApiClient : ICardTraderApiClient
 		var restService = new BaseRestService(httpClient, clientConfig, cache, tokenProvider);
 		_products = new Lazy<IInventory>(() => new Inventory(restService));
 		_marketProducts = new Lazy<IMarketplace>(() => new Marketplace(restService));
+		_wishlists = new Lazy<IWishlists>(() => new Apis.Wishlists(restService));
+		_orders = new Lazy<IOrders>(() => new Apis.Orders(restService));
 	}
 
 	/// <summary>
